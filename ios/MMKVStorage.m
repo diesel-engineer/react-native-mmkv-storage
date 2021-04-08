@@ -41,13 +41,13 @@ RCT_EXPORT_MODULE()
     return RCTGetMethodQueue();
 }
 
-- (id)init
+- (id)init:(NSString *)appID bundleURL:(NSURL *)bundleURL
 {
     self = [super init];
     if (self) {
          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
          NSString *libraryPath = (NSString *) [paths firstObject];
-         NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
+         NSString *rootDir = [[libraryPath stringByAppendingPathComponent:@"mmkv"] stringByAppendingPathComponent: appID];
          [MMKV initializeMMKV:rootDir];
         
         secureStorage = [[SecureStorage alloc]init];
