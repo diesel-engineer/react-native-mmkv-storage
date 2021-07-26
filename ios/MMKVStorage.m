@@ -41,6 +41,23 @@ RCT_EXPORT_MODULE()
     return RCTGetMethodQueue();
 }
 
+- (id)init
+ {
+     self = [super init];
+     if (self) {
+          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+          NSString *libraryPath = (NSString *) [paths firstObject];
+          NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
+          [MMKV initializeMMKV:rootDir];
+         
+         secureStorage = [[SecureStorage alloc]init];
+         IdStore = [[IDStore alloc] initWithMMKV:[MMKV mmkvWithID:@"mmkvIdStore"]];
+         mmkvMap = [NSMutableDictionary dictionary];
+         
+     }
+     return self;
+ }
+
 - (id)init:(NSString *)appID bundleURL:(NSURL *)bundleURL
 {
     self = [super init];
