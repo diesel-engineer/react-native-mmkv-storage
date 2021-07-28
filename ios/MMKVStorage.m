@@ -1,6 +1,5 @@
 #import "MMKVStorage.h"
 #import <MMKV/MMKV.h>
-#import "SecureStorage.h"
 #import "IDStore.h"
 #import "StorageGetters.h"
 #import "StorageSetters.h"
@@ -29,7 +28,6 @@ static dispatch_queue_t RCTGetMethodQueue()
 }
 
 MMKV *mmkv;
-SecureStorage *secureStorage;
 IDStore *IdStore;
 NSMutableDictionary *mmkvMap;
 NSString *defaultStorage = @"default";
@@ -42,32 +40,30 @@ RCT_EXPORT_MODULE()
 }
 
 - (id)init
- {
-     self = [super init];
-     if (self) {
-          NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-          NSString *libraryPath = (NSString *) [paths firstObject];
-          NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
-          [MMKV initializeMMKV:rootDir];
-         
-         secureStorage = [[SecureStorage alloc]init];
-         IdStore = [[IDStore alloc] initWithMMKV:[MMKV mmkvWithID:@"mmkvIdStore"]];
-         mmkvMap = [NSMutableDictionary dictionary];
-         
-     }
-     return self;
- }
+{
+    self = [super init];
+    if (self) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+        NSString *libraryPath = (NSString *) [paths firstObject];
+        NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
+        [MMKV initializeMMKV:rootDir];
+        
+        IdStore = [[IDStore alloc] initWithMMKV:[MMKV mmkvWithID:@"mmkvIdStore"]];
+        mmkvMap = [NSMutableDictionary dictionary];
+        
+    }
+    return self;
+}
 
 - (id)init:(NSString *)appID bundleURL:(NSURL *)bundleURL
 {
     self = [super init];
     if (self) {
-         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-         NSString *libraryPath = (NSString *) [paths firstObject];
-         NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
-         [MMKV initializeMMKV:rootDir];
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+        NSString *libraryPath = (NSString *) [paths firstObject];
+        NSString *rootDir = [libraryPath stringByAppendingPathComponent:@"mmkv"];
+        [MMKV initializeMMKV:rootDir];
         
-        secureStorage = [[SecureStorage alloc]init];
         IdStore = [[IDStore alloc] initWithMMKV:[MMKV mmkvWithID:@"mmkvIdStore"]];
         mmkvMap = [NSMutableDictionary dictionary];
         
@@ -329,8 +325,6 @@ RCT_EXPORT_METHOD(typeIndexerHasKey:(NSString *)ID key:(NSString*)key
 }
 
 
-
-
 #pragma mark removeItem
 RCT_EXPORT_METHOD(removeItem:(NSString *)ID key:(NSString*)key
                   resolve:(RCTPromiseResolveBlock)resolve
@@ -347,12 +341,11 @@ RCT_EXPORT_METHOD(removeItem:(NSString *)ID key:(NSString*)key
         } else {
             resolve(@NO);
         }
-     
+        
     } else {
         
         reject(@"cannot_get", @"database not initialized for the given ID", nil);
     }
-    
     
 }
 
@@ -369,12 +362,10 @@ RCT_EXPORT_METHOD(clearStore:(NSString *)ID resolve:(RCTPromiseResolveBlock)reso
         resolve(@YES);
         
     } else {
-        
         reject(@"cannot_get", @"database not initialized for the given ID", nil);
     }
     
 }
-
 
 #pragma mark clearMemoryCache
 RCT_EXPORT_METHOD(clearMemoryCache:(NSString *)ID resolve:(RCTPromiseResolveBlock)resolve
@@ -392,7 +383,6 @@ RCT_EXPORT_METHOD(clearMemoryCache:(NSString *)ID resolve:(RCTPromiseResolveBloc
     }
     
 }
-
 
 #pragma mark getItemsForType
 RCT_EXPORT_METHOD(getItemsForType:(NSString *)ID
@@ -466,45 +456,6 @@ RCT_EXPORT_METHOD(changeEncryptionKey:(NSString *)ID
     } else {
         reject(@"cannot_get", @"database not initialized for the given ID", nil);
     }
-    
-}
-
-#pragma mark setSecureKey
-RCT_EXPORT_METHOD(setSecureKey: (NSString *)alias value:(NSString *)value
-                  options: (NSDictionary *)options
-                  callback:(RCTResponseSenderBlock)callback
-                  )
-{
-    
-    [secureStorage setSecureKey:alias value:value options:options callback:callback];
-    
-}
-
-#pragma mark getSecureKey
-RCT_EXPORT_METHOD(getSecureKey:(NSString *)alias
-                  callback:(RCTResponseSenderBlock)callback)
-{
-    
-    [secureStorage getSecureKey:alias callback:callback];
-    
-    
-}
-
-#pragma mark secureKeyExists
-RCT_EXPORT_METHOD(secureKeyExists:(NSString *)key
-                  callback:(RCTResponseSenderBlock)callback)
-{
-    
-    [secureStorage secureKeyExists:key callback:callback];
-    
-}
-#pragma mark removeSecureKey
-RCT_EXPORT_METHOD(removeSecureKey:(NSString *)key
-                  callback:(RCTResponseSenderBlock)callback)
-{
-    
-    [secureStorage removeSecureKey:key callback:callback];
-    
 }
 
 -(void) encryptionHandler:(NSString *)ID
@@ -518,28 +469,8 @@ RCT_EXPORT_METHOD(removeSecureKey:(NSString *)key
         NSString *alias = [IdStore getAlias:ID];
         if (alias != NULL) {
             
-            if ([secureStorage secureKeyExists:alias callback:NULL]) {
-                
-                NSData *cryptKey = [[secureStorage getSecureKey:alias callback:NULL] dataUsingEncoding:NSUTF8StringEncoding];
-                
-                if ([mode isEqualToNumber:@1]) {
-                    kv = [MMKV mmkvWithID:ID  cryptKey:cryptKey mode:MMKVSingleProcess];
-                } else {
-                    kv = [MMKV mmkvWithID:ID  cryptKey:cryptKey mode:MMKVMultiProcess ];
-                }
-                
-                [mmkvMap setObject:kv forKey:ID];
-                if (callback != NULL) {
-                    
-                    callback(@[[NSNull null]  ,@YES  ]);
-                }
-                
-                
-            } else {
-                if (callback != NULL) {
-                    callback(@[@"Wrong Password or database corrupted", [NSNull null] ]);
-                }
-                
+            if (callback != NULL) {
+                callback(@[@"Wrong Password or database corrupted", [NSNull null] ]);
             }
         }
         
@@ -553,10 +484,10 @@ RCT_EXPORT_METHOD(removeSecureKey:(NSString *)key
         [mmkvMap setObject:kv forKey:ID];
         
         if (callback != NULL) {
-                         
-          callback(@[[NSNull null]  ,@YES  ]);
-       }
-                    
+            
+            callback(@[[NSNull null]  ,@YES  ]);
+        }
+        
     }
     
     

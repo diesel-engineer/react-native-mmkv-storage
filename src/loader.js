@@ -8,7 +8,6 @@ export default class Loader {
   constructor() {
     this.instanceID = "default";
     this.initWithEncryption = false;
-    this.secureKeyStorage = false;
     this.accessibleMode = ACCESSIBLE.WHEN_UNLOCKED;
     this.processingMode = MODES.SINGLE_PROCESS;
     this.aliasPrefix = "com.MMKV.";
@@ -29,7 +28,6 @@ export default class Loader {
     this.initWithEncryption = true;
     this.key = generatePassword();
     this.alias = stringToHex(this.aliasPrefix + this.instanceID);
-    this.secureKeyStorage = true;
     return this;
   }
 
@@ -38,18 +36,8 @@ export default class Loader {
     return this;
   }
 
-  encryptWithCustomKey(key, secureKeyStorage, alias) {
+  encryptWithCustomKey(key, alias) {
     this.key = key;
-    this.secureKeyStorage = false;
-    if (secureKeyStorage) {
-      this.secureKeyStorage = true;
-      if (alias) {
-        this.alias = stringToHex(this.aliasPrefix + alias);
-      } else {
-        this.alias = stringToHex(this.aliasPrefix + this.instanceID);
-      }
-    }
-
     return this;
   }
 
