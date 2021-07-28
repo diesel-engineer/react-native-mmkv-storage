@@ -12,95 +12,10 @@ export const currentInstancesStatus = {};
 
 export function initialize(options, callback) {
   if (options.initWithEncryption) {
-    if (options.secureKeyStorage) {
-      options.mmkv.secureKeyExists(options.alias, (error, exists) => {
-        if (error) {
-          callback(error, null);
-        }
-        if (exists) {
-          initWithEncryptionUsingOldKey(options, callback);
-        } else {
-          initWithEncryptionUsingNewKey(options, callback);
-        }
-      });
-    } else {
       initWithEncryptionWithoutSecureStorage(options, callback);
-    }
   } else {
     initWithoutEncryption(options, callback);
   }
-}
-
-/**
- * Usually after first creation of the
- * storage, your database will be
- * initialized with its old key stored
- * in the secure storage.
- *
- * @param {*} options The options you have set for storage in loader class
- * @param {Function} callback A function called with two params, error & result
- */
-
-function initWithEncryptionUsingOldKey(options, callback) {
-  options.mmkv.getSecureKey(options.alias, (error, value) => {
-    if (error) {
-      callback(error, null);
-      return;
-    }
-    if (value) {
-      options.mmkv.setupWithEncryption(
-        options.instanceID,
-        options.processingMode,
-        value,
-        options.alias,
-        (error) => {
-          if (error) {
-            callback(error, null);
-            return;
-          }
-          callback(null, true);
-        }
-      );
-    }
-  });
-}
-
-/**
- * For first creation of storage
- * this function is called when
- * you are encrypting it on initialzation
- *
- * @param {*} options The options you have set for storage in loader class
- * @param {Function} callback A function called with two params, error & result
- */
-
-function initWithEncryptionUsingNewKey(options, callback) {
-  if (options.key == null || options.key.length < 3)
-    throw new Error("Key is null or too short");
-
-  options.mmkv.setSecureKey(
-    options.alias,
-    options.key,
-    { accessible: options.accessibleMode },
-    (error) => {
-      if (error) {
-        callback(error, null);
-      }
-      options.mmkv.setupWithEncryption(
-        options.instanceID,
-        options.processingMode,
-        options.key,
-        options.alias,
-        (error) => {
-          if (error) {
-            callback(error, null);
-            return;
-          }
-          callback(null, true);
-        }
-      );
-    }
-  );
 }
 
 /**
