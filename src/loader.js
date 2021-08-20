@@ -7,7 +7,7 @@ import { NativeModules } from "react-native"
 
 export default class Loader {
   constructor() {
-    let instanceID = NativeModules.RNMMKV.getConstants()?.appId || 'default';
+    let instanceID = NativeModules.RNMMKV?.getConstants()?.appId || 'default';
     this.options = {
       instanceID: instanceID,
       initWithEncryption: false,
@@ -22,7 +22,7 @@ export default class Loader {
   }
 
   withInstanceID(id) {
-    let instanceID = NativeModules.RNMMKV.getConstants()?.appId || '';
+    let instanceID = NativeModules.RNMMKV?.getConstants()?.appId || '';
     this.options.instanceID = `${id}${instanceID}`;
 
     return this;
