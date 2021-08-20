@@ -7,9 +7,9 @@ import { NativeModules } from "react-native"
 
 export default class Loader {
   constructor() {
-    let appId = await NativeModules.RNMMKV?.getAppId() || 'default';
+    let instanceID = NativeModules.getConstants()?.appId || 'default';
     this.options = {
-      instanceID: appId,
+      instanceID: instanceID,
       initWithEncryption: false,
       secureKeyStorage: false,
       accessibleMode: ACCESSIBLE.WHEN_UNLOCKED,
@@ -22,8 +22,8 @@ export default class Loader {
   }
 
   withInstanceID(id) {
-    let appId = await NativeModules.RNMMKV?.getAppId() || '';
-    this.options.instanceID = `${id}${appId}`;
+    let instanceID = NativeModules.getConstants()?.appId || '';
+    this.options.instanceID = `${id}${instanceID}`;
 
     return this;
   }
