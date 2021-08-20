@@ -3,11 +3,13 @@ import API from "./api";
 import { stringToHex, ACCESSIBLE, MODES, options } from "./utils";
 import { currentInstancesStatus } from "./initializer";
 import { handleAction } from "./handlers";
+import { NativeModules } from "react-native"
 
 export default class Loader {
   constructor() {
+    let appId = await NativeModules.RNMMKV?.getAppId() || 'default';
     this.options = {
-      instanceID: "default",
+      instanceID: appId,
       initWithEncryption: false,
       secureKeyStorage: false,
       accessibleMode: ACCESSIBLE.WHEN_UNLOCKED,
@@ -20,7 +22,8 @@ export default class Loader {
   }
 
   withInstanceID(id) {
-    this.options.instanceID = id;
+    let appId = await NativeModules.RNMMKV?.getAppId() || '';
+    this.options.instanceID = `${id}${appId}`
 
     return this;
   }
