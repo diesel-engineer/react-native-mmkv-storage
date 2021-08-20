@@ -23,7 +23,7 @@ export default class Loader {
 
   withInstanceID(id) {
     let appId = await NativeModules.RNMMKV?.getAppId() || '';
-    this.options.instanceID = `${id}${appId}`
+    this.options.instanceID = `${id}${appId}`;
 
     return this;
   }
